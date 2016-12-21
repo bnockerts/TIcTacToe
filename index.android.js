@@ -12,7 +12,7 @@ import {
   View
 } from 'react-native';
 
-export default class ReactNativeTest extends Component {
+export default class TicTacToe extends Component {
   render() {
     return (
       <View style={styles.container}>
@@ -50,4 +50,4 @@ const styles = StyleSheet.create({
   },
 });
 
-AppRegistry.registerComponent('ReactNativeTest', () => ReactNativeTest);
+AppRegistry.registerComponent('TicTacToe', () => TicTacToe);

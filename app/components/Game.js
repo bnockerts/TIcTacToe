@@ -6,65 +6,50 @@ import {
     Text,
     View
 } from 'react-native';
-import Board from './board';
+import Board from './Board';
+import store from '../store';
+import {makeMove, jumpToTurn} from '../actions';
 
 export default class Game extends Component {
-    constructor() {
-        super();
+    constructor(props) {
+        super(props);
+
+        const storeState = store.getState();
 
         this.state = {
-            history: [{
-                squares: Array(9).fill(null)
-            }],
-            turn: 0,
-            xIsNext: true,
+            ...storeState,
             historyDS: new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2})
         };
 
-        this._onSquareClick = this._onSquareClick.bind(this);
-        this._calculateWinner = this._calculateWinner.bind(this);
-        this._jumpTo = this._jumpTo.bind(this);
-        this._renderRow = this._renderRow.bind(this);
+        store.subscribe(this.onStoreUpdate.bind(this));
+
+        this.onSquareClick = this.onSquareClick.bind(this);
+        this.calculateWinner = this.calculateWinner.bind(this);
+        this.jumpTo = this.jumpTo.bind(this);
+        this.renderRow = this.renderRow.bind(this);
     }
 
-    _onSquareClick(i) {
-        const history = this.state.history.slice(0, this.state.turn + 1);
-        const current = history[history.length - 1];
-        const squares = current.squares.slice();
+    onStoreUpdate() {
+        this.setState(store.getState());
+    }
+
+    onSquareClick(i) {
+        const history = this.state.history;
+        const squares = history[history.length - 1];
 
         // return if the game is over or the square has already been clicked
-        if (this._calculateWinner(squares) || squares[i]) {
+        if (!squares || this.calculateWinner(squares) || squares[i]) {
             return;
         }
 
-
-        squares[i] = this.state.xIsNext ? 'X' : 'O';
-
-        const moves = history.map(function(state, turn) {
-            return turn === 0 ?
-                    'Game Start' :
-                    'Move #' + turn;
-        });
-
-        this.setState({
-            history: history.concat([{
-                squares: squares
-            }]),
-            turn: history.length,
-            xIsNext: !this.state.xIsNext,
-            historyDS: this.state.historyDS.cloneWithRows(moves),
-
-        });
+        store.dispatch(makeMove(i));
     }
 
-    _jumpTo(turn) {
-         this.setState({
-            turn: Number(turn),
-            xIsNext: (turn % 2) ? false : true,
-        });
+    jumpTo(turn) {
+        store.dispatch(jumpToTurn(turn));
     }
 
-    _calculateWinner(squares) {
+    calculateWinner(squares) {
         const lines = [
             // horizontal
             [0, 1, 2],
@@ -89,17 +74,17 @@ export default class Game extends Component {
         return null;
     }
 
-    _renderRow(rowData, sectionId, rowId) {
-        return <Text onPress={() => this._jumpTo(rowId)}>{rowData}</Text>;
+    renderRow(rowData, sectionId, rowId) {
+        return <Text onPress={() => this.jumpTo(rowId)}>{rowData}</Text>;
     }
 
     render() {
         const history = this.state.history;
-        const current = history[this.state.turn];
-        const winner = this._calculateWinner(current.squares);
+        const squares = history[this.state.turn];
+        const winner = this.calculateWinner(squares);
         const status = winner ?
                         'Winner: ' + winner :
-                        'Next Player: ' + (this.state.xIsNext ? 'X': 'O');
+                        'Next Player: ' + this.state.currentTurn;
         const moves = this.state.historyDS.cloneWithRows(history.map(function(state, turn) {
             return turn === 0 ?
                     'Game Start' :
@@ -112,13 +97,13 @@ export default class Game extends Component {
                     {status}
                 </Text>
                 <Board
-                    squares={current.squares}
-                    onClick={(i) => this._onSquareClick(i)}
+                    squares={squares}
+                    onClick={(i) => this.onSquareClick(i)}
                 />
                 <ListView
                     style={styles.moves}
                     dataSource={moves}
-                    renderRow={this._renderRow}
+                    renderRow={this.renderRow}
                 />
             </View>
         );

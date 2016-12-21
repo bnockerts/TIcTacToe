@@ -1,21 +1,24 @@
 import React, {Component} from 'react';
 import {
-    AppRegistry,
-    View,
     Text,
     TouchableOpacity,
     StyleSheet
 } from 'react-native';
 
-export default function Square(props) {
+function Square({value, onClick}) {
     return (
         <TouchableOpacity
-            onPress={() => props.onClick()}
+            onPress={() => onClick()}
             style={styles.button}>
-            <Text style={styles.text}>{props.value}</Text>
+            <Text style={styles.text}>{value}</Text>
         </TouchableOpacity>
     );
 }
+
+Square.propTypes = {
+    value: React.PropTypes.string,
+    onClick: React.PropTypes.func
+};
 
 const styles = StyleSheet.create({
     button: {
@@ -33,4 +36,4 @@ const styles = StyleSheet.create({
     }
 });
 
-AppRegistry.registerComponent('Square', () => Square);
+export default Square;

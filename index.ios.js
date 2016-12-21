@@ -10,11 +10,9 @@ import {
   StyleSheet,
   View
 } from 'react-native';
-import Game from './js/game';
+import Game from './app/components/Game';
 
-export default class ReactNativeTest extends Component {
-
-
+export default class TicTacToe extends Component {
   render() {
     return (
       <Game/>
@@ -44,4 +42,4 @@ const styles = StyleSheet.create({
   },
 });
 
-AppRegistry.registerComponent('ReactNativeTest', () => ReactNativeTest);
+AppRegistry.registerComponent('TicTacToe', () => TicTacToe);
