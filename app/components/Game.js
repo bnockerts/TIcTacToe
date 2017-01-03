@@ -1,40 +1,25 @@
 import React, {Component} from 'react';
 import {
-    AppRegistry,
     StyleSheet,
-    ListView,
     Text,
     View
 } from 'react-native';
+import {connect} from 'react-redux';
 import Board from './Board';
+import History from './History';
 import store from '../store';
 import {makeMove, jumpToTurn} from '../actions';
 
-export default class Game extends Component {
+class Game extends Component {
     constructor(props) {
         super(props);
 
-        const storeState = store.getState();
-
-        this.state = {
-            ...storeState,
-            historyDS: new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2})
-        };
-
-        store.subscribe(this.onStoreUpdate.bind(this));
-
         this.onSquareClick = this.onSquareClick.bind(this);
         this.calculateWinner = this.calculateWinner.bind(this);
-        this.jumpTo = this.jumpTo.bind(this);
-        this.renderRow = this.renderRow.bind(this);
-    }
-
-    onStoreUpdate() {
-        this.setState(store.getState());
     }
 
     onSquareClick(i) {
-        const history = this.state.history;
+        const history = this.props.history;
         const squares = history[history.length - 1];
 
         // return if the game is over or the square has already been clicked
@@ -43,10 +28,6 @@ export default class Game extends Component {
         }
 
         store.dispatch(makeMove(i));
-    }
-
-    jumpTo(turn) {
-        store.dispatch(jumpToTurn(turn));
     }
 
     calculateWinner(squares) {
@@ -74,22 +55,16 @@ export default class Game extends Component {
         return null;
     }
 
-    renderRow(rowData, sectionId, rowId) {
-        return <Text onPress={() => this.jumpTo(rowId)}>{rowData}</Text>;
-    }
-
     render() {
-        const history = this.state.history;
-        const squares = history[this.state.turn];
+        const history = this.props.history;
+        const squares = history[this.props.turn];
         const winner = this.calculateWinner(squares);
         const status = winner ?
                         'Winner: ' + winner :
-                        'Next Player: ' + this.state.currentTurn;
-        const moves = this.state.historyDS.cloneWithRows(history.map(function(state, turn) {
-            return turn === 0 ?
-                    'Game Start' :
-                    'Move #' + turn;
-        }));
+                        'Next Player: ' + this.props.currentTurn;
+        const moves = history.map(function(state, turn) {
+            return turn === 0 ? 'Game Start' : 'Move #' + turn;
+        });
 
         return (
             <View style={styles.container}>
@@ -100,11 +75,12 @@ export default class Game extends Component {
                     squares={squares}
                     onClick={(i) => this.onSquareClick(i)}
                 />
-                <ListView
-                    style={styles.moves}
-                    dataSource={moves}
-                    renderRow={this.renderRow}
-                />
+                <View style={styles.moves}>
+                    <History
+                        moves={moves}
+                        onClick={this.props.jumpToTurn}
+                    />
+                </View>
             </View>
         );
     }
@@ -122,9 +98,24 @@ const styles = StyleSheet.create({
         fontSize: 24
     },
     moves: {
-        marginTop: 10,
-        marginLeft: 125
+        marginTop: 20,
+        marginLeft: 125,
+        marginRight: 125
     }
 });
 
-AppRegistry.registerComponent('Game', () => Game);
+function mapStateToProps(store) {
+    return {
+        history: store.history,
+        turn: store.turn,
+        currentTurn: store.currentTurn
+    };
+}
+
+function mapDispatchToProps(dispatch) {
+    return {
+        jumpToTurn: (turn) => dispatch(jumpToTurn(turn))
+    };
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(Game);

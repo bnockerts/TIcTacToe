@@ -9,7 +9,8 @@ function Square({value, onClick}) {
     return (
         <TouchableOpacity
             onPress={() => onClick()}
-            style={styles.button}>
+            style={styles.button}
+        >
             <Text style={styles.text}>{value}</Text>
         </TouchableOpacity>
     );
