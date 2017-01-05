@@ -1,14 +1,8 @@
-import React, {Component} from 'react';
-import {
-    StyleSheet,
-    Text,
-    View
-} from 'react-native';
+import {Component} from 'react';
 import {connect} from 'react-redux';
-import Board from './Board';
-import History from './History';
-import store from '../store';
-import {makeMove, jumpToTurn} from '../actions';
+import store from '../../store';
+import {makeMove, jumpToTurn} from '../../actions';
+import GameRender from './GameRender';
 
 class Game extends Component {
     constructor(props) {
@@ -56,53 +50,9 @@ class Game extends Component {
     }
 
     render() {
-        const history = this.props.history;
-        const squares = history[this.props.turn];
-        const winner = this.calculateWinner(squares);
-        const status = winner ?
-                        'Winner: ' + winner :
-                        'Next Player: ' + this.props.currentTurn;
-        const moves = history.map(function(state, turn) {
-            return turn === 0 ? 'Game Start' : 'Move #' + turn;
-        });
-
-        return (
-            <View style={styles.container}>
-                <Text style={styles.status}>
-                    {status}
-                </Text>
-                <Board
-                    squares={squares}
-                    onClick={(i) => this.onSquareClick(i)}
-                />
-                <View style={styles.moves}>
-                    <History
-                        moves={moves}
-                        onClick={this.props.jumpToTurn}
-                    />
-                </View>
-            </View>
-        );
+        return GameRender.call(this, this.props, this.state);
     }
 }
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        padding: 25,
-        paddingTop: 75
-    },
-    status: {
-        textAlign: 'center',
-        marginBottom: 10,
-        fontSize: 24
-    },
-    moves: {
-        marginTop: 20,
-        marginLeft: 125,
-        marginRight: 125
-    }
-});
 
 function mapStateToProps(store) {
     return {

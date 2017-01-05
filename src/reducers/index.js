@@ -1,5 +1,4 @@
-import { combineReducesrs } from 'redux';
-import { MAKE_MOVE, JUMP_TO_TURN } from './actions';
+import { MAKE_MOVE, JUMP_TO_TURN } from '../actions';
 
 function history(state = [], action, currentTurn) {
   switch (action.type) {
